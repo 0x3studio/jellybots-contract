@@ -38,10 +38,13 @@ contract JellyBots is ERC721A, Ownable {
         _safeMint(addr, 1);
     }
 
-    function airdrop(address _addr) external onlyOwner {
-        require(totalMinted + 1 <= MAX_SUPPLY, "Maximum supply exceeded");
-        totalMinted += 1;
-        _safeMint(_addr, 1);
+    function airdrop(address _addr, uint256 _quantity) external onlyOwner {
+        require(
+            totalMinted + _quantity <= MAX_SUPPLY,
+            "Maximum supply exceeded"
+        );
+        totalMinted += _quantity;
+        _safeMint(_addr, _quantity);
     }
 
     // Utils

@@ -72,10 +72,10 @@ describe("JellyBots", function () {
   });
 
   it("Should allow airdropping of ERC721 token", async () => {
-    await jellyBots.airdrop(addr2.address);
+    await jellyBots.airdrop(addr2.address, 5);
 
     const balance = await jellyBots.balanceOf(addr2.address);
 
-    expect(balance.toNumber()).to.equal(1);
+    expect(balance.toNumber()).to.equal(5);
   });
 });
