@@ -57,7 +57,10 @@ contract JellyBots is ERC721A, Ownable {
         returns (string memory)
     {
         require(_exists(_tokenId), "URI query for nonexistent token");
-        return string(abi.encodePacked(baseURI, Strings.toString(_tokenId)));
+        return
+            string(
+                abi.encodePacked(baseURI, Strings.toString(_tokenId), ".json")
+            );
     }
 
     // Getters and setters
