@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const BASE_URI = "ipfs://xyz/";
+const BASE_URI = "ar://xyz/";
 
 let owner: any, addr1: any, addr2: any, jellyBots: any;
 
@@ -56,7 +56,7 @@ describe("JellyBots", function () {
 
     const tokenURI = await jellyBots.tokenURI(1);
 
-    expect(tokenURI).to.equal(`${BASE_URI}1`);
+    expect(tokenURI).to.equal(`${BASE_URI}1.json`);
   });
 
   it("Should not allow setting the base URI if it is already set", async () => {
@@ -77,5 +77,11 @@ describe("JellyBots", function () {
     const balance = await jellyBots.balanceOf(addr2.address);
 
     expect(balance.toNumber()).to.equal(5);
+  });
+
+  it("Should give me the right number of token minted", async () => {
+    const totalMinted = await jellyBots.getTotalMinted();
+
+    expect(totalMinted.toNumber()).to.equal(6);
   });
 });

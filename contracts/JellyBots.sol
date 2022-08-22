@@ -86,6 +86,10 @@ contract JellyBots is ERC721A, Ownable {
         return uint256(currentStep);
     }
 
+    function getTotalMinted() public view returns (uint256) {
+        return totalMinted;
+    }
+
     // Withdraw
 
     function withdraw() external onlyOwner {
