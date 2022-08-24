@@ -20,7 +20,7 @@ contract JellyBots is ERC721A, Ownable {
     string public baseURI;
 
     uint256 private constant MAX_SUPPLY = 10000;
-    uint256 public constant BASE_PRICE = 0.0001 ether;
+    uint256 public constant INCREMENT = 0.0001 ether;
 
     uint256 public totalMinted = 0;
 
@@ -30,12 +30,28 @@ contract JellyBots is ERC721A, Ownable {
 
     function mint() external payable {
         address addr = msg.sender;
-        uint256 price = BASE_PRICE + BASE_PRICE * totalMinted;
+        uint256 price = (totalMinted + 1) * INCREMENT;
         require(currentStep == Step.Sale, "Public sale is not active");
         require(totalMinted + 1 <= MAX_SUPPLY, "Maximum supply exceeded");
         require(msg.value >= price, "Not enough funds");
         totalMinted += 1;
         _safeMint(addr, 1);
+    }
+
+    function mintMultiple(uint256 _quantity) external payable {
+        address addr = msg.sender;
+        uint256 price = (totalMinted *
+            _quantity +
+            (_quantity * (_quantity + 1)) /
+            2) * INCREMENT;
+        require(currentStep == Step.Sale, "Public sale is not active");
+        require(
+            totalMinted + _quantity <= MAX_SUPPLY,
+            "Maximum supply exceeded"
+        );
+        require(msg.value >= price, "Not enough funds");
+        totalMinted += _quantity;
+        _safeMint(addr, _quantity);
     }
 
     function airdrop(address _addr, uint256 _quantity) external onlyOwner {

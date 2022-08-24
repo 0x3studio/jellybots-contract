@@ -3,14 +3,15 @@ const { ethers } = require("hardhat");
 
 const BASE_URI = "ar://xyz/";
 
-let owner: any, addr1: any, addr2: any, jellyBots: any;
+let owner: any, addr1: any, addr2: any, addr3: any, jellyBots: any;
 
 describe("JellyBots", function () {
   before(async () => {
-    const [_owner, _addr1, _addr2] = await ethers.getSigners();
+    const [_owner, _addr1, _addr2, _addr3] = await ethers.getSigners();
     owner = _owner;
     addr1 = _addr1;
     addr2 = _addr2;
+    addr3 = _addr3;
 
     const JellyBots = await ethers.getContractFactory("JellyBots");
     jellyBots = await JellyBots.deploy();
@@ -41,14 +42,24 @@ describe("JellyBots", function () {
     await expect(mint()).eventually.to.rejectedWith("Not enough funds");
   });
 
-  it("Should allow minting of ERC721 token", async () => {
+  it("Should allow minting of an ERC721 token", async () => {
     await jellyBots.connect(addr1).mint({
-      value: ethers.utils.parseEther("0.0001"),
+      value: ethers.utils.parseEther("0.0001"), // initial price is 0.0001
     });
 
     const balance = await jellyBots.balanceOf(addr1.address);
 
     expect(balance.toNumber()).to.equal(1);
+  });
+
+  it("Should allow minting of multiple ERC721 tokens", async () => {
+    await jellyBots.connect(addr2).mintMultiple(3, {
+      value: ethers.utils.parseEther("0.0009"), // 0.0002 + 0.0003 + 0.0004
+    });
+
+    const balance = await jellyBots.balanceOf(addr2.address);
+
+    expect(balance.toNumber()).to.equal(3);
   });
 
   it("Should allow setting the base URI and getting a token URI for an existent token", async () => {
@@ -71,10 +82,10 @@ describe("JellyBots", function () {
     );
   });
 
-  it("Should allow airdropping of ERC721 token", async () => {
-    await jellyBots.airdrop(addr2.address, 5);
+  it("Should allow airdropping of multiple ERC721 tokens", async () => {
+    await jellyBots.airdrop(addr3.address, 5);
 
-    const balance = await jellyBots.balanceOf(addr2.address);
+    const balance = await jellyBots.balanceOf(addr3.address);
 
     expect(balance.toNumber()).to.equal(5);
   });
@@ -82,6 +93,6 @@ describe("JellyBots", function () {
   it("Should give me the right number of token minted", async () => {
     const totalMinted = await jellyBots.getTotalMinted();
 
-    expect(totalMinted.toNumber()).to.equal(6);
+    expect(totalMinted.toNumber()).to.equal(9);
   });
 });
