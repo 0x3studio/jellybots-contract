@@ -23,35 +23,31 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     uint256 private constant MAX_SUPPLY = 10000;
     uint256 public constant INCREMENT = 0.0001 ether;
 
-    uint256 public totalMinted = 0;
-
     constructor() ERC721A("Jelly Bots", "JLB") {}
 
     // Mint
 
     function mint() external payable nonReentrant {
         address addr = msg.sender;
-        uint256 price = (totalMinted + 1) * INCREMENT;
+        uint256 price = (totalSupply() + 1) * INCREMENT;
         require(currentStep == Step.Sale, "Public sale is not active");
-        require(totalMinted + 1 <= MAX_SUPPLY, "Maximum supply exceeded");
+        require(totalSupply() + 1 <= MAX_SUPPLY, "Maximum supply exceeded");
         require(msg.value >= price, "Not enough funds");
-        totalMinted += 1;
         _safeMint(addr, 1);
     }
 
     function mintMultiple(uint256 _quantity) external payable nonReentrant {
         address addr = msg.sender;
-        uint256 price = (totalMinted *
+        uint256 price = (totalSupply() *
             _quantity +
             (_quantity * (_quantity + 1)) /
             2) * INCREMENT;
         require(currentStep == Step.Sale, "Public sale is not active");
         require(
-            totalMinted + _quantity <= MAX_SUPPLY,
+            totalSupply() + _quantity <= MAX_SUPPLY,
             "Maximum supply exceeded"
         );
         require(msg.value >= price, "Not enough funds");
-        totalMinted += _quantity;
         _safeMint(addr, _quantity);
     }
 
@@ -61,10 +57,9 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         nonReentrant
     {
         require(
-            totalMinted + _quantity <= MAX_SUPPLY,
+            totalSupply() + _quantity <= MAX_SUPPLY,
             "Maximum supply exceeded"
         );
-        totalMinted += _quantity;
         _safeMint(_addr, _quantity);
     }
 
@@ -105,10 +100,6 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
 
     function getCurrentStep() public view returns (uint256) {
         return uint256(currentStep);
-    }
-
-    function getTotalMinted() public view returns (uint256) {
-        return totalMinted;
     }
 
     // Withdraw

@@ -91,8 +91,8 @@ describe("JellyBots", function () {
   });
 
   it("Should give me the right number of token minted", async () => {
-    const totalMinted = await jellyBots.getTotalMinted();
+    const totalSupply = await jellyBots.totalSupply();
 
-    expect(totalMinted.toNumber()).to.equal(9);
+    expect(totalSupply.toNumber()).to.equal(9);
   });
 });
