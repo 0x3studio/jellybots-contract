@@ -19,15 +19,28 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     Step public currentStep;
 
     string public baseURI;
+    bool public paused = false;
 
     uint256 private constant MAX_SUPPLY = 10000;
     uint256 public constant INCREMENT = 0.0001 ether;
 
     constructor() ERC721A("Jelly Bots", "JLB") {}
 
+    // Modifiers
+
+    modifier whenNotPaused() {
+        require(!paused, "Contract is currently paused");
+        _;
+    }
+
+    modifier whenPaused() {
+        require(paused, "Contract is not currently paused");
+        _;
+    }
+
     // Mint
 
-    function mint() external payable nonReentrant {
+    function mint() external payable whenNotPaused nonReentrant {
         address addr = msg.sender;
         uint256 price = (totalSupply() + 1) * INCREMENT;
         require(currentStep == Step.Sale, "Public sale is not active");
@@ -36,7 +49,12 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(addr, 1);
     }
 
-    function mintMultiple(uint256 _quantity) external payable nonReentrant {
+    function mintMultiple(uint256 _quantity)
+        external
+        payable
+        whenPaused
+        nonReentrant
+    {
         address addr = msg.sender;
         uint256 price = (totalSupply() *
             _quantity +
@@ -54,6 +72,7 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     function airdrop(address _addr, uint256 _quantity)
         external
         onlyOwner
+        whenPaused
         nonReentrant
     {
         require(
@@ -100,6 +119,20 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
 
     function getCurrentStep() public view returns (uint256) {
         return uint256(currentStep);
+    }
+
+    // Pause methods
+
+    function pause() public onlyOwner {
+        paused = true;
+    }
+
+    function unpause() public onlyOwner {
+        paused = false;
+    }
+
+    function isPaused() public view returns (bool) {
+        return paused;
     }
 
     // Withdraw
