@@ -1,17 +1,33 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { MerkleTree } from "merkletreejs";
+import keccak256 from "keccak256";
 
 const BASE_URI = "ar://xyz/";
 
-let owner: any, addr1: any, addr2: any, addr3: any, jellyBots: any;
+let owner: any,
+  addr1: any,
+  addr2: any,
+  addr3: any,
+  jellyBots: any,
+  leafNodes: any,
+  merkleTree: any;
 
 describe("JellyBots", function () {
   before(async () => {
     const [_owner, _addr1, _addr2, _addr3] = await ethers.getSigners();
+
     owner = _owner;
     addr1 = _addr1;
     addr2 = _addr2;
     addr3 = _addr3;
+
+    const whitelistAddresses = [addr1.address, addr2.address];
+
+    leafNodes = whitelistAddresses.map((addr) => keccak256(addr));
+    merkleTree = new MerkleTree(leafNodes, keccak256, {
+      sortPairs: true,
+    });
 
     const JellyBots = await ethers.getContractFactory("JellyBots");
     jellyBots = await JellyBots.deploy();
@@ -52,9 +68,12 @@ describe("JellyBots", function () {
     expect(balance.toNumber()).to.equal(1);
   });
 
-  it("Should not allow minting of multiple ERC721 tokens when not paused", async () => {
+  it("Should not allow minting of multiple ERC721 tokens when not paused and whitelisted", async () => {
+    const claimingAddress = keccak256(addr2.address);
+    const hexProof = merkleTree.getHexProof(claimingAddress);
+
     await expect(
-      jellyBots.connect(addr2).mintMultiple(3, {
+      jellyBots.connect(addr2).mintMultiple(hexProof, 3, {
         value: ethers.utils.parseEther("0.0009"),
       })
     ).eventually.to.rejectedWith("Contract is not currently paused");
@@ -82,8 +101,32 @@ describe("JellyBots", function () {
     ).eventually.to.rejectedWith("Contract is currently paused");
   });
 
-  it("Should allow minting of multiple ERC721 tokens when paused", async () => {
-    await jellyBots.connect(addr2).mintMultiple(3, {
+  it("Should allow setting the Merklet root", async () => {
+    const rootHash = merkleTree.getRoot();
+
+    await jellyBots.setMerkleRoot(rootHash);
+
+    const merkleRoot = await jellyBots.getMerkleRoot();
+
+    expect(merkleRoot).to.equal(`0x${rootHash.toString("hex")}`);
+  });
+
+  it("Should not allow minting of multiple ERC721 tokens when paused and not whitelisted", async () => {
+    const claimingAddress = keccak256(addr3.address);
+    const hexProof = merkleTree.getHexProof(claimingAddress);
+
+    await expect(
+      jellyBots.connect(addr2).mintMultiple(hexProof, 3, {
+        value: ethers.utils.parseEther("0.0009"), // 0.0002 + 0.0003 + 0.0004
+      })
+    ).eventually.to.rejectedWith("Invalid Merkle proof");
+  });
+
+  it("Should allow minting of multiple ERC721 tokens when paused and whitelisted", async () => {
+    const claimingAddress = keccak256(addr2.address);
+    const hexProof = merkleTree.getHexProof(claimingAddress);
+
+    await jellyBots.connect(addr2).mintMultiple(hexProof, 3, {
       value: ethers.utils.parseEther("0.0009"), // 0.0002 + 0.0003 + 0.0004
     });
 

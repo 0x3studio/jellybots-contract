@@ -7,6 +7,7 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "erc721a/contracts/ERC721A.sol";
 
 contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
@@ -16,13 +17,13 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         Epilogue
     }
 
-    Step public currentStep;
-
-    string public baseURI;
-    bool public paused = false;
+    Step private currentStep;
+    bytes32 private merkleRoot;
+    string private baseURI;
+    bool private paused = false;
 
     uint256 private constant MAX_SUPPLY = 10000;
-    uint256 public constant INCREMENT = 0.0001 ether;
+    uint256 private constant INCREMENT = 0.0001 ether;
 
     constructor() ERC721A("Jelly Bots", "JLB") {}
 
@@ -49,7 +50,7 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(addr, 1);
     }
 
-    function mintMultiple(uint256 _quantity)
+    function mintMultiple(bytes32[] calldata merkleProof, uint256 _quantity)
         external
         payable
         whenPaused
@@ -60,6 +61,15 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
             _quantity +
             (_quantity * (_quantity + 1)) /
             2) * INCREMENT;
+        require(merkleRoot != "", "Merkle root is not set");
+        require(
+            MerkleProof.verify(
+                merkleProof,
+                merkleRoot,
+                keccak256(abi.encodePacked(addr))
+            ),
+            "Invalid Merkle proof"
+        );
         require(currentStep == Step.Sale, "Public sale is not active");
         require(
             totalSupply() + _quantity <= MAX_SUPPLY,
@@ -99,6 +109,14 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     }
 
     // Getters and setters
+
+    function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
+        merkleRoot = _merkleRoot;
+    }
+
+    function getMerkleRoot() public view returns (bytes32) {
+        return merkleRoot;
+    }
 
     function setBaseURI(string memory _baseURI) external onlyOwner {
         require(
