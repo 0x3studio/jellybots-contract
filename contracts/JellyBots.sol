@@ -5,10 +5,11 @@ pragma solidity ^0.8.12;
 //@title Jelly Bots
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "erc721a/contracts/ERC721A.sol";
 
-contract JellyBots is ERC721A, Ownable {
+contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     enum Step {
         Prologue,
         Sale,
@@ -28,7 +29,7 @@ contract JellyBots is ERC721A, Ownable {
 
     // Mint
 
-    function mint() external payable {
+    function mint() external payable nonReentrant {
         address addr = msg.sender;
         uint256 price = (totalMinted + 1) * INCREMENT;
         require(currentStep == Step.Sale, "Public sale is not active");
@@ -38,7 +39,7 @@ contract JellyBots is ERC721A, Ownable {
         _safeMint(addr, 1);
     }
 
-    function mintMultiple(uint256 _quantity) external payable {
+    function mintMultiple(uint256 _quantity) external payable nonReentrant {
         address addr = msg.sender;
         uint256 price = (totalMinted *
             _quantity +
@@ -54,7 +55,11 @@ contract JellyBots is ERC721A, Ownable {
         _safeMint(addr, _quantity);
     }
 
-    function airdrop(address _addr, uint256 _quantity) external onlyOwner {
+    function airdrop(address _addr, uint256 _quantity)
+        external
+        onlyOwner
+        nonReentrant
+    {
         require(
             totalMinted + _quantity <= MAX_SUPPLY,
             "Maximum supply exceeded"
