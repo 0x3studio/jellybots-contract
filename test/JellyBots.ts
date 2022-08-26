@@ -9,18 +9,20 @@ let owner: any,
   addr1: any,
   addr2: any,
   addr3: any,
+  addr4: any,
   jellyBots: any,
   leafNodes: any,
   merkleTree: any;
 
 describe("JellyBots", function () {
   before(async () => {
-    const [_owner, _addr1, _addr2, _addr3] = await ethers.getSigners();
+    const [_owner, _addr1, _addr2, _addr3, _addr4] = await ethers.getSigners();
 
     owner = _owner;
     addr1 = _addr1;
     addr2 = _addr2;
     addr3 = _addr3;
+    addr4 = _addr4;
 
     const whitelistAddresses = [addr1.address, addr2.address];
 
@@ -150,13 +152,18 @@ describe("JellyBots", function () {
   });
 
   it("Should allow bulk airdropping of multiple ERC721 tokens when paused", async () => {
-    await jellyBots.bulkAirdrop([addr2.address, addr3.address], 1);
+    await jellyBots.bulkAirdrop(
+      [addr2.address, addr3.address, addr4.address],
+      1
+    );
 
     const balance1 = await jellyBots.balanceOf(addr2.address);
     const balance2 = await jellyBots.balanceOf(addr3.address);
+    const balance3 = await jellyBots.balanceOf(addr4.address);
 
     expect(balance1.toNumber()).to.equal(4); // 3 previously and 1 now
     expect(balance2.toNumber()).to.equal(6); // 5 previously and 1 now
+    expect(balance3.toNumber()).to.equal(1);
   });
 
   it("Should allow unpausing the contract", async () => {
@@ -190,6 +197,6 @@ describe("JellyBots", function () {
   it("Should give me the right number of token minted", async () => {
     const totalSupply = await jellyBots.totalSupply();
 
-    expect(totalSupply.toNumber()).to.equal(11);
+    expect(totalSupply.toNumber()).to.equal(12);
   });
 });
