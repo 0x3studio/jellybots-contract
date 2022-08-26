@@ -92,6 +92,21 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         _safeMint(_addr, _quantity);
     }
 
+    function bulkAirdrop(address[] memory _addrs, uint256 _quantity)
+        external
+        onlyOwner
+        whenPaused
+        nonReentrant
+    {
+        require(
+            totalSupply() + _quantity * _addrs.length <= MAX_SUPPLY,
+            "Maximum supply exceeded"
+        );
+        for (uint256 i = 0; i < _addrs.length; i++) {
+            _safeMint(_addrs[i], _quantity);
+        }
+    }
+
     // Utils
 
     function tokenURI(uint256 _tokenId)

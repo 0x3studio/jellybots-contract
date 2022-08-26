@@ -85,6 +85,12 @@ describe("JellyBots", function () {
     ).eventually.to.rejectedWith("Contract is not currently paused");
   });
 
+  it("Should not allow bulk airdropping of multiple ERC721 tokens when not paused", async () => {
+    await expect(
+      jellyBots.bulkAirdrop([addr2.address, addr3.address], 1)
+    ).eventually.to.rejectedWith("Contract is not currently paused");
+  });
+
   it("Should allow pausing the contract", async () => {
     await jellyBots.pause();
 
@@ -101,7 +107,7 @@ describe("JellyBots", function () {
     ).eventually.to.rejectedWith("Contract is currently paused");
   });
 
-  it("Should allow setting the Merklet root", async () => {
+  it("Should allow setting the Merkle root", async () => {
     const rootHash = merkleTree.getRoot();
 
     await jellyBots.setMerkleRoot(rootHash);
@@ -143,6 +149,16 @@ describe("JellyBots", function () {
     expect(balance.toNumber()).to.equal(5);
   });
 
+  it("Should allow bulk airdropping of multiple ERC721 tokens when paused", async () => {
+    await jellyBots.bulkAirdrop([addr2.address, addr3.address], 1);
+
+    const balance1 = await jellyBots.balanceOf(addr2.address);
+    const balance2 = await jellyBots.balanceOf(addr3.address);
+
+    expect(balance1.toNumber()).to.equal(4); // 3 previously and 1 now
+    expect(balance2.toNumber()).to.equal(6); // 5 previously and 1 now
+  });
+
   it("Should allow unpausing the contract", async () => {
     await jellyBots.unpause();
 
@@ -174,6 +190,6 @@ describe("JellyBots", function () {
   it("Should give me the right number of token minted", async () => {
     const totalSupply = await jellyBots.totalSupply();
 
-    expect(totalSupply.toNumber()).to.equal(9);
+    expect(totalSupply.toNumber()).to.equal(11);
   });
 });
