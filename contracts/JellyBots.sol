@@ -2,7 +2,7 @@
 pragma solidity ^0.8.12;
 
 //@author 0x3 Studio
-//@title Jelly Bots
+//@title JellyBots
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -25,7 +25,7 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
     uint256 private constant MAX_SUPPLY = 10000;
     uint256 private constant INCREMENT = 0.0001 ether;
 
-    constructor() ERC721A("Jelly Bots", "JLB") {}
+    constructor() ERC721A("JellyBots", "JLB") {}
 
     // Modifiers
 
