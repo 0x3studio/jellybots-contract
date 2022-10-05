@@ -129,7 +129,7 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         merkleRoot = _merkleRoot;
     }
 
-    function getMerkleRoot() public view returns (bytes32) {
+    function getMerkleRoot() external view returns (bytes32) {
         return merkleRoot;
     }
 
@@ -141,7 +141,7 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         baseURI = _baseURI;
     }
 
-    function getBaseURI() public view returns (string memory) {
+    function getBaseURI() external view returns (string memory) {
         return baseURI;
     }
 
@@ -150,21 +150,21 @@ contract JellyBots is ERC721A, Ownable, ReentrancyGuard {
         currentStep = Step(_currentStep);
     }
 
-    function getCurrentStep() public view returns (uint256) {
+    function getCurrentStep() external view returns (uint256) {
         return uint256(currentStep);
     }
 
     // Pause methods
 
-    function pause() public onlyOwner {
+    function pause() external onlyOwner {
         paused = true;
     }
 
-    function unpause() public onlyOwner {
+    function unpause() external onlyOwner {
         paused = false;
     }
 
-    function isPaused() public view returns (bool) {
+    function isPaused() external view returns (bool) {
         return paused;
     }
 
